@@ -169,7 +169,7 @@ namespace JC {
         return currNode == nullptr;
       }
 
-      bool operator==(iterator& other) {
+      bool operator==(const iterator& other) const {
         if (currNode == nullptr && other.isEnd()) {
           return true;
         } else if (currNode == nullptr || other.isEnd()) {
@@ -179,7 +179,7 @@ namespace JC {
         }
       }
 
-      bool operator!=(iterator& other) {
+      bool operator!=(const iterator& other) const {
         return !(*this == other);
       }
 
