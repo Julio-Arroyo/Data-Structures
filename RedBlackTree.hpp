@@ -2,6 +2,7 @@
 #define RED_BLACK_TREE_HPP
 
 #include <iostream>
+#include <iterator>
 #include <cassert>
 #include <memory>
 
@@ -11,13 +12,6 @@
 namespace JC {
   class RedBlackTree {
   public:
-    RedBlackTree();
-
-    void insert(int val);
-    void remove();
-    void visualize() const;
-
-  private:
     class Node : public std::enable_shared_from_this<Node> {
     public:
       Node(int val) : data{val} {}
@@ -141,6 +135,92 @@ namespace JC {
       std::shared_ptr<Node> right{nullptr};
     };
 
+    class iterator {
+    public:
+      using value_type = int;
+      using difference_type = int;
+
+      explicit iterator() {
+        currNode = nullptr;
+      }
+
+      explicit iterator(std::shared_ptr<Node> start) {
+        currNode = start;
+      }
+
+      int operator*() const {
+        return currNode->getData();
+      }
+
+      // Prefix increment
+      iterator& operator++() {
+        searchNext();
+        return *this;
+      }
+
+      // Postfix increment
+      iterator operator++(int /* dummy parameter used by compiler to distinguis from prefix */) {
+        iterator ret_val = *this;
+        searchNext();
+        return ret_val;
+      }
+
+      bool isEnd() const {
+        return currNode == nullptr;
+      }
+
+      bool operator==(iterator& other) {
+        if (currNode == nullptr && other.isEnd()) {
+          return true;
+        } else if (currNode == nullptr || other.isEnd()) {
+          return false;
+        } else {
+          return currNode->getData() == *other;
+        }
+      }
+
+      bool operator!=(iterator& other) {
+        return !(*this == other);
+      }
+
+    private:
+      void searchNext() {
+        int start_key = currNode->getData();
+
+        // Case 1: starting node has no right child
+        if (currNode->getRight() == nullptr) {
+          // follow parents until you find key > start_key
+          while (true) {
+            currNode = currNode->getParent();
+            if (currNode == nullptr || currNode->getData() > start_key) {
+              break;
+            }
+          }
+        }
+
+        // Case 2: starting node has right child
+        else {
+          // go right once, then as many left's as possible
+          currNode = currNode->getRight();
+          while (currNode->getLeft() != nullptr) {
+            currNode = currNode->getLeft();
+          }
+          assert(currNode != nullptr);
+        }
+      }
+      std::shared_ptr<Node> currNode{nullptr};
+    };
+    static_assert(std::input_iterator<iterator>);
+
+    RedBlackTree();
+
+    void insert(int val);
+    void remove();
+    void visualize() const;
+    iterator begin();
+    iterator end();
+
+  private:
     void visualize(std::shared_ptr<Node> node, size_t depth) const;
     void maintainInvariants(std::shared_ptr<Node> node);
 
@@ -283,6 +363,18 @@ namespace JC {
         assert(false);
       }
     }
+  }
+
+  RedBlackTree::iterator RedBlackTree::begin() {
+    std::shared_ptr<Node> start_node = root;
+    while (start_node->getLeft() != nullptr) {
+      start_node = start_node->getLeft();
+    }
+    return RedBlackTree::iterator(start_node);
+  }
+
+  RedBlackTree::iterator RedBlackTree::end() {
+    return RedBlackTree::iterator();
   }
 }
 

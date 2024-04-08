@@ -76,7 +76,12 @@ int main() {
   tree2.visualize();
   std::cout << std::endl;
 
-
+  std::cout << "Begin iterator test " << std::endl;
+  JC::RedBlackTree::iterator it = tree2.begin();
+  while (!it.isEnd()) {
+    std::cout << *it << std::endl;
+    it++;
+  }
 
   std::cout << "Done" << std::endl;
   return 0;
